@@ -7,6 +7,8 @@
 Type a username → get an overall rating, a position, and six attributes.
 Download it, post it, argue about the formula.
 
+> **Live:** https://fcgithubcard.vercel.app
+
 [MIT License](LICENSE) · No build step · No backend · No tracking
 
 </div>
@@ -84,6 +86,8 @@ budget, put the token behind a server-side proxy, not in client JS.
 
 Static files. Any host works:
 
+This one runs on **Vercel** at https://fcgithubcard.vercel.app.
+Equivalent options:
 - **Cloudflare Pages** — drag the folder in, no build config
 - **Netlify** — same
 - **GitHub Pages** — serve from `main` / root
@@ -97,9 +101,9 @@ Regenerate it after editing `og.html`:
 chromium --headless --window-size=1200,630 --screenshot=og.png og.html
 ```
 
-> Most crawlers resolve the relative `og:image` path. X/Twitter wants an absolute
-> URL — after you know your domain, change it to
-> `https://yourdomain.com/og.png`.
+`og:image` is set to the absolute URL `https://fcgithubcard.vercel.app/og.png`,
+which is what X and WhatsApp require. If you fork this, update both `og:image`
+and `twitter:image` in `index.html` to your own domain.
 
 ## Files
 
