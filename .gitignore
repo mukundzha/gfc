@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets — never commit a GitHub token
+.env
+.env.local
+token.txt
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Node / tooling (not used at runtime, but harmless to ignore)
+node_modules/
+npm-debug.log*
+
+# Generated preview shots
+*.local.png
+.playwright-cli/

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>GitHub FC Card — your dev rating as a football card</title>
+<meta name="description" content="Type a GitHub username, get a FIFA-style overall rating card. Download it, post it, argue about the formula." />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0a0c11" />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="./" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230e1118'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial,sans-serif' font-size='18' font-weight='bold' fill='%23f2c14e' text-anchor='middle'%3EG%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://avatars.githubusercontent.com" crossorigin />
+<meta property="og:title" content="GitHub FC Card" />
+<meta property="og:description" content="Your GitHub account, rated like a football card." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="A gold FIFA-style card rating a GitHub account with an overall of 88." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="og.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Outfit:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js" defer></script>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<main class="wrap">
+  <header class="head">
+    <p class="eyebrow">Ultimate Team</p>
+    <h1>GitHub&nbsp;FC <span>Card</span></h1>
+    <p class="lede">Six attributes, one overall rating, zero objectivity. Type a username and pull the pack.</p>
+    <div class="pitch-line" aria-hidden="true"></div>
+  </header>
+
+  <form id="form" class="search" novalidate>
+    <div class="field-wrap">
+      <label class="field-label" for="username">GitHub username</label>
+      <div class="field">
+        <span class="at" aria-hidden="true">@</span>
+        <input id="username" name="username" type="text" autocomplete="off" spellcheck="false"
+               placeholder="e.g. torvalds" aria-label="GitHub username" />
+        <button type="button" id="surprise" class="dice" title="Random username" aria-label="Surprise me">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <button type="submit" id="go" class="primary">Pull card</button>
+  </form>
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+
+  <div class="demos">
+    <span>Try</span>
+    <button data-user="torvalds">torvalds</button>
+    <button data-user="sindresorhus">sindresorhus</button>
+    <button data-user="anomalyco">anomalyco</button>
+    <button data-user="gaearon">gaearon</button>
+  </div>
+
+  <details class="token">
+    <summary>Rate limited?</summary>
+    <div class="token-body">
+      <label class="field-label" for="token">GitHub token (optional)</label>
+      <p class="token-note">Anonymous requests get 60/hr. A free token raises it to 5,000/hr. Stored in this browser only, never sent anywhere but api.github.com.</p>
+      <div class="token-row">
+        <input id="token" type="password" placeholder="ghp_…" autocomplete="off" spellcheck="false" />
+        <span class="token-state" id="tokenState"></span>
+      </div>
+    </div>
+  </details>
+
+  <!-- skeleton -->
+  <section id="skeleton" class="stage skeleton hidden" aria-hidden="true">
+    <div class="card">
+      <div class="card-in">
+        <div class="sk-head">
+          <div class="sk-block sk-ovr"></div>
+          <div class="sk-block sk-face"></div>
+        </div>
+        <div class="sk-block sk-line w60"></div>
+        <div class="sk-block sk-line w40"></div>
+        <div class="sk-grid">
+          <div class="sk-block sk-cell"></div><div class="sk-block sk-cell"></div><div class="sk-block sk-cell"></div>
+          <div class="sk-block sk-cell"></div><div class="sk-block sk-cell"></div><div class="sk-block sk-cell"></div>
+        </div>
+        <div class="sk-block sk-line w40 sk-foot"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stage" class="stage hidden" aria-busy="false" aria-label="Generated card">
+    <div class="card" id="card" data-tier="Gold">
+      <div class="card-in">
+        <span class="burst" id="burst" aria-hidden="true"></span>
+        <div class="card-head">
+          <div class="ovr-block">
+            <div class="ovr" id="ovr">94</div>
+            <div class="pos" id="pos">CDM</div>
+            <div class="tier" id="tier">Gold</div>
+          </div>
+          <div class="face">
+            <img id="avatar" class="avatar" alt="" crossorigin="anonymous" />
+            <span class="face-glare" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="ident">
+          <h2 class="name" id="name">octocat</h2>
+          <div class="team">
+            <span class="crest" id="clubCrest" data-l="O" aria-hidden="true"></span>
+            <span class="team-text">
+              <span class="club" id="club">Free Agent</span>
+              <span class="nation" id="nation">Internet</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="rule"></div>
+
+        <div class="stats">
+          <div class="st"><b id="pac">80</b><span>Pace</span><i class="bar"></i></div>
+          <div class="st"><b id="sho">85</b><span>Finishing</span><i class="bar"></i></div>
+          <div class="st"><b id="pas">82</b><span>Vision</span><i class="bar"></i></div>
+          <div class="st"><b id="dri">84</b><span>Dribbling</span><i class="bar"></i></div>
+          <div class="st"><b id="def">60</b><span>Tackling</span><i class="bar"></i></div>
+          <div class="st"><b id="phy">78</b><span>Engine</span><i class="bar"></i></div>
+        </div>
+
+        <div class="rule thin"></div>
+
+        <div class="foot">
+          <span class="foot-stats" id="foot">★ 265k · 12 repos · 328k followers</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="download" class="primary">Download PNG</button>
+      <button id="share">Share on X</button>
+      <button id="copy" class="ghost">Copy link</button>
+    </div>
+
+    <div class="breakdown">
+      <button id="breakToggle" class="break-toggle" aria-expanded="false" aria-controls="breakdown">
+        <span>Show the maths</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="breakdown" class="breakdown-body" hidden>
+        <h3 class="bk-h">This card</h3>
+        <p class="bk-p" id="positionNote"></p>
+        <table id="breakTable"><tbody></tbody></table>
+
+        <h3 class="bk-h">Position</h3>
+        <p class="bk-p">Position is decided by your <b>top language</b>: whichever language GitHub reports on the most of your repos. One language per repo, so a huge project counts the the same as a tiny one. Ties go to whichever the API listed first.</p>
+        <dl id="posMap" class="pos-map"></dl>
+
+        <h3 class="bk-h">Ratings</h3>
+        <p class="bk-p">Every attribute is a log-scaled count compared against the top of the range, so the 10,000th star adds far less than the 10th. Nothing is clamped until the very end, which is why 99 is rare and actually means something.</p>
+        <ul id="weightList" class="weights"></ul>
+
+        <h3 class="bk-h">Tier</h3>
+        <p class="bk-p">Straight off the overall: <b>90+ Icon</b>, <b>78–89 Gold</b>, <b>66–77 Silver</b>, <b>below 66 Bronze</b>.</p>
+
+        <p class="break-note">Formula is public and deliberately arguable. <a href="README.md">Change it in a PR →</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript>
+  <div class="noscript">This card generator needs JavaScript. The rating formula is written out in <a href="README.md">README.md</a>.</div>
+</noscript>
+<script src="app.js"></script>
+</body>
+</html>
