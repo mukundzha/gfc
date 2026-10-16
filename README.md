@@ -16,24 +16,32 @@ Any static host works.
 
 ## How the rating works
 
-Two requests: `GET /users/{u}` and `GET /users/{u}/repos?per_page=100`. Then four raw counts get log-scaled against a ceiling and clamped to 40-99.
-
-`norm(x, max)` is `log10(x+1) / log10(max+1)`, so the 10,000th star barely moves the number. That's deliberate. Without it almost everyone with 10k+ stars sits at 99 and the top end means nothing.
+Two requests: `GET /users/{u}` and `GET /users/{u}/repos?per_page=100`. Then six attributes, each reading one signal, so nothing is counted twice.
 
 | Attribute | Formula |
 |---|---|
-| FINISHING | `45 + norm(stars, 250k) * 54` |
-| VISION | `45 + norm(forks, 25k) * 40 + norm(following, 1k) * 14` |
+| FINISHING | `45 + norm(sum of √stars per repo, 2000) * 54` |
 | PACE | `45 + norm(repos, 250) * 34 + norm(followers, 150k) * 20` |
-| DRIBBLING | `48 + norm(languages, 14) * 51` |
-| TACKLING | `45 + norm(stars+forks, 300k) * 38 + min(12, age * 1.5)` |
-| ENGINE | `45 + min(22, age * 2.6) + norm(repos, 250) * 32` |
+| VISION | `45 + norm(forks, 25k) * 40 + norm(topics, 40) * 14` |
+| DRIBBLING | `48 + norm(main-language KB, 1.5M) * 51` |
+| TACKLING | `45 + unarchived share * 30 + described share * 24` |
+| ENGINE | `45 + norm(active years, 20) * 54` |
 
 OVR is the weighted average, defined in `WEIGHTS` in `lib/rate.js`.
 
 Tier comes straight off it: 90+ Icon, 78-89 Gold, 66-77 Silver, under 66 Bronze.
 
-The ceilings are numbers I picked by eye. They quietly decide who gets a good card, so argue with them. Everything tunable lives in `lib/rate.js`.
+Four decisions worth arguing with:
+
+**FINISHING uses the square root of each repo's stars, summed.** A sqrt sum means a broad body of work beats one viral repository. Without it, a single 250k-star project maxes the attribute and everything else becomes irrelevant.
+
+**Forks are excluded from FINISHING.** A fork's stars belong to whoever wrote the original code.
+
+**ENGINE counts active years, not account age.** It's the number of distinct calendar years with at least one push. Ten years of existing is not ten years of stamina, and the old formula punished new accounts for being new.
+
+**DRIBBLING weights languages by repository size.** A 400MB Rust project counts for more than a dozen two-line scripts, so depth beats dabbling.
+
+The ceilings in `CEILINGS` are numbers I picked, and they decide who gets a good card. They were set just above the strongest value measured on a real account, which keeps 99 rare. That measurement skewed towards well-known developers, so the spread around the middle of the range is unverified. Everything tunable lives in `lib/rate.js`.
 
 ## Position
 
@@ -77,9 +85,10 @@ chromium --headless --window-size=1200,630 --screenshot=og.png og.html
 
 ## Known rough edges
 
+- The ceilings are unverified in the middle of the range. See above.
+- Only 100 repos are fetched, sorted by most recently updated. FINISHING, VISION and ENGINE all undercount anyone with more than 100 repos, so prolific accounts score low. PACE uses `user.public_repos` and is unaffected.
+- ENGINE counts push years across the fetched repos only, so it inherits the same cap.
 - `api/card/[username].js` is a serverless route meant to render a card PNG for README embeds. It 404s right now, don't use it.
-- The card counts up to 100 repos. Someone with 400 isn't fully counted.
-- ENGINE is basically account age. A new account with 30 good repos gets punished.
 
 ## License
 
