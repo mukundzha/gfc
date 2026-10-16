@@ -90,6 +90,10 @@ chromium --headless --window-size=1200,630 --screenshot=og.png og.html
 - ENGINE counts push years across the fetched repos only, so it inherits the same cap.
 - `api/card/[username].js` is a serverless route meant to render a card PNG for README embeds. It 404s right now, don't use it.
 
+## The maker's mark
+
+The card carries a `GFC / @handle` signature at the bottom, but it's hidden on screen and only revealed for the export. So nobody's card looks like an advert, and every PNG someone downloads or shares carries the credit.
+
 ## License
 
 MIT

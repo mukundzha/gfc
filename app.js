@@ -121,6 +121,8 @@ async function render(user, repos, { animate = true } = {}) {
   $("nation").textContent = (user.location || "Internet").slice(0, 22);
   $("clubCrest").dataset.l = (user.name || user.login).trim().charAt(0).toUpperCase();
   $("foot").textContent = `★ ${fmt(s.stars)} · ${s.repoCount} repos · ${fmt(s.followers)} followers`;
+  $("langName").textContent = s.topLang;
+  $("sigHandle").textContent = "@" + user.login;
 
   $("breakTable").querySelector("tbody").innerHTML =
     Object.entries(s.formulas).map(([k, f]) => `<tr><td>${k}</td><td>${f}</td></tr>`).join("") +
@@ -246,8 +248,10 @@ async function exportCard() {
   btn.disabled = true;
   card.classList.add("exporting");
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // signature reserves its height, so the capture box matches what's on screen
+  const h = card.offsetHeight;
 
-  const w = card.offsetWidth, h = card.offsetHeight;
+  const w = card.offsetWidth;
   try {
     const url = await window.htmlToImage.toPng(card, {
       pixelRatio: 3,

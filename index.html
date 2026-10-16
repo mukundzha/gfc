@@ -118,6 +118,7 @@
           <div class="face">
             <img id="avatar" class="avatar" alt="" />
             <span class="face-glare" aria-hidden="true"></span>
+            <span class="face-tint" aria-hidden="true"></span>
           </div>
         </div>
 
@@ -128,6 +129,12 @@
             <span class="team-text">
               <span class="club" id="club">Free Agent</span>
               <span class="nation" id="nation">Internet</span>
+            </span>
+          </div>
+          <div class="badges">
+            <span class="lang-slot" id="langSlot" hidden>
+              <span class="lang-dot" id="langDot"></span>
+              <span class="lang-name" id="langName">Code</span>
             </span>
           </div>
         </div>
@@ -147,6 +154,14 @@
 
         <div class="foot">
           <span class="foot-stats" id="foot">★ 265k · 12 repos · 328k followers</span>
+        </div>
+
+        <!-- Maker's mark. Hidden on screen, revealed only for the export clone,
+             so every downloaded or shared image carries the credit without
+             cluttering the card people look at. -->
+        <div class="card-signature" aria-hidden="true">
+          <span class="sig-mark">GFC</span>
+          <span class="sig-handle" id="sigHandle">@octocat</span>
         </div>
       </div>
     </div>

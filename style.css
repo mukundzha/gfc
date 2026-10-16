@@ -138,6 +138,8 @@ button:disabled { cursor: progress; opacity: .55; }
   --ink: #f7e3ab;
   --panel: linear-gradient(168deg, #3d2c0f 0%, #221806 56%, #160f04 100%);
   --edge: rgba(247,227,171,.3);
+  --halo: rgba(243,214,121,.45);
+  --tint: radial-gradient(ellipse 74% 78% at 52% 38%, transparent 46%, rgba(243,214,121,.22) 78%, rgba(156,118,33,.42));
   position: relative; width: min(364px, 93vw); margin: 0 auto;
   border-radius: 14px; padding: 8px;
   background: linear-gradient(158deg, #ffeeb4 0%, #fff9e2 18%, #f0cd63 52%, #cfa128 100%);
@@ -150,18 +152,24 @@ button:disabled { cursor: progress; opacity: .55; }
   --ink: #eef3f9;
   --panel: linear-gradient(168deg, #232936 0%, #12161e 58%, #0b0e13 100%);
   --edge: rgba(238,243,249,.24);
+  --halo: rgba(220,228,238,.4);
+  --tint: radial-gradient(ellipse 74% 78% at 52% 38%, transparent 46%, rgba(170,188,210,.2) 78%, rgba(70,78,90,.4));
   background: linear-gradient(158deg, #ffffff 0%, #f6f9fc 18%, #d5dde7 52%, #98a3b2 100%);
 }
 .card[data-tier="Bronze"] {
   --ink: #ffe3c6;
   --panel: linear-gradient(168deg, #301b0a 0%, #1b0f04 58%, #120a03 100%);
   --edge: rgba(255,227,198,.22);
+  --halo: rgba(214,163,110,.4);
+  --tint: radial-gradient(ellipse 74% 78% at 52% 38%, transparent 46%, rgba(190,150,100,.2) 78%, rgba(80,48,20,.42));
   background: linear-gradient(158deg, #ffdcb8 0%, #fff0e0 18%, #dd9a63 52%, #a4642f 100%);
 }
 .card[data-tier="Icon"] {
   --ink: #f7e6b4;
   --panel: linear-gradient(168deg, #1d1e25 0%, #0f1014 58%, #08090b 100%);
   --edge: rgba(247,214,120,.36);
+  --halo: rgba(247,214,136,.5);
+  --tint: radial-gradient(ellipse 74% 78% at 52% 38%, transparent 46%, rgba(243,214,121,.22) 78%, rgba(120,90,30,.44));
   background: linear-gradient(158deg, #514a3a 0%, #2b2b33 30%, #17171d 62%, #0e0e12 100%);
   box-shadow:
     0 28px 60px -20px rgba(0,0,0,.95),
@@ -206,7 +214,8 @@ button:disabled { cursor: progress; opacity: .55; }
 .face {
   width: 134px; height: 134px; flex-shrink: 0; padding: 2px; border-radius: 5px;
   background: var(--edge);
-  box-shadow: 6px 6px 0 -2px rgba(0,0,0,.45);
+  box-shadow: 6px 6px 0 -2px rgba(0,0,0,.45),
+              0 0 26px -6px var(--halo);
 }
 .avatar {
   width: 100%; height: 100%; object-fit: cover; border-radius: 3px; display: block;
@@ -216,6 +225,11 @@ button:disabled { cursor: progress; opacity: .55; }
   position: absolute; top: 2px; left: 2px; right: 2px; height: calc(100% - 4px);
   border-radius: 3px; pointer-events: none;
   background: linear-gradient(148deg, rgba(255,255,255,.22), transparent 44%);
+}
+/* blends the photo into the tier colour at its edges */
+.face-tint {
+  position: absolute; top: 2px; left: 2px; right: 2px; height: calc(100% - 4px);
+  border-radius: 3px; pointer-events: none; background: var(--tint);
 }
 
 /* identity */
@@ -393,6 +407,37 @@ button:disabled { cursor: progress; opacity: .55; }
   background: var(--ink-800); color: var(--muted); font-size: .88rem; line-height: 1.6;
 }
 .noscript a { color: var(--accent); }
+
+/* ---------- identity badges ---------- */
+.badges { display: flex; align-items: center; gap: 8px; margin-top: 10px; min-height: 20px; }
+.lang-slot {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px 4px; border-radius: 999px;
+  border: 1px solid var(--edge); color: var(--ink);
+}
+.lang-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ink); box-shadow: 0 0 8px var(--halo);
+}
+.lang-name {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .04em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.lang-slot[hidden] { display: none; }
+
+/* ---------- export signature ---------- */
+/* Never on screen. Only the export clone reveals it, so every shared PNG
+   carries the credit without cluttering the card anyone looks at. */
+.card-signature { display: none; }
+.card.exporting .card-signature {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 11px; padding-top: 9px;
+  border-top: 1px solid var(--edge);
+  font-family: var(--mono); font-size: .56rem; letter-spacing: .14em;
+  color: var(--ink); opacity: .62;
+}
+.sig-mark { font-weight: 500; }
+.sig-handle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ---------- export ---------- */
 /* While rasterising, freeze everything: an in-flight animation transform or a
