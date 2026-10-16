@@ -1,0 +1,15 @@
+{
+  "name": "gfc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FIFA-style rating card for any GitHub account",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "local": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "@vercel/og": "^0.6.5"
+  }
+}
