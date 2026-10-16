@@ -375,6 +375,32 @@ button:disabled { cursor: progress; opacity: .55; }
 }
 .noscript a { color: var(--accent); }
 
+/* ---------- export ---------- */
+/* While rasterising, freeze everything: an in-flight animation transform or a
+   preserve-3d context makes html-to-image measure the wrong bounding box and
+   silently clip the card in half. */
+.card.exporting, .card.exporting * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  transform-style: flat !important;
+}
+.card.exporting .burst { display: none; }
+
+/* ---------- card-only capture ---------- */
+body.only-card { background: transparent; }
+body.only-card .grain,
+body.only-card .head,
+body.only-card .search,
+body.only-card .status,
+body.only-card .demos,
+body.only-card .token,
+body.only-card .actions,
+body.only-card .breakdown,
+body.only-card .toast { display: none; }
+body.only-card .wrap { max-width: none; padding: 0; }
+body.only-card .stage { margin: 0; }
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px);

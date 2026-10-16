@@ -6,62 +6,7 @@ const $ = (id) => {
 const form = $("form"), input = $("username"), status = $("status");
 const stage = $("stage"), card = $("card"), skeleton = $("skeleton");
 
-const clamp = (n, lo = 40, hi = 99) => Math.max(lo, Math.min(hi, Math.round(n)));
-const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n));
-const USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/;
-const CACHE_PREFIX = "fccache:", CACHE_TTL = 6 * 3600 * 1000, MAX_CACHE = 24;
-
-const POSITIONS = {
-  JavaScript: "RW", TypeScript: "RW", HTML: "RW", CSS: "RW",
-  Python: "CAM", Jupyter: "CAM",
-  Go: "CDM", Rust: "CDM", C: "CDM", "C++": "CDM", Java: "CDM", Zig: "CDM",
-  Shell: "GK", Dockerfile: "GK", HCL: "GK", Nix: "GK", Makefile: "GK",
-  Kotlin: "LW", Swift: "LW", Dart: "LW", Objective: "LW",
-  Ruby: "ST", PHP: "ST",
-};
-const positionFor = (lang) => POSITIONS[lang] || "CM";
-const tierFor = (ovr) => (ovr >= 90 ? "Icon" : ovr >= 78 ? "Gold" : ovr >= 66 ? "Silver" : "Bronze");
-
-/* Open formula — every constant here is fair game in a PR.
-   norm() log-scales a raw count against the top of a realistic range,
-   so 99 means "near the very best" instead of "over 10k stars". */
-const norm = (x, max) => Math.log10(x + 1) / Math.log10(max + 1);
-
-function rate(user, repos) {
-  const followers = user.followers || 0;
-  const repoCount = user.public_repos || repos.length;
-  const stars = repos.reduce((s, r) => s + (r.stargazers_count || 0), 0);
-  const forks = repos.reduce((s, r) => s + (r.forks_count || 0), 0);
-  const ageYrs = Math.max(0, (Date.now() - new Date(user.created_at)) / 3.15e10);
-
-  const langs = {};
-  repos.forEach((r) => { if (r.language) langs[r.language] = (langs[r.language] || 0) + 1; });
-  const uniqLangs = Object.keys(langs).length;
-  const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0]?.[0] || "Code";
-
-  const pac = clamp(45 + norm(repoCount, 250) * 34 + norm(followers, 150000) * 20);
-  const sho = clamp(45 + norm(stars, 250000) * 54);
-  const pas = clamp(45 + norm(forks, 25000) * 40 + norm(user.following || 0, 1000) * 14);
-  const dri = clamp(48 + norm(uniqLangs, 14) * 51);
-  const def = clamp(45 + norm(stars + forks, 300000) * 38 + Math.min(12, ageYrs * 1.5));
-  const phy = clamp(45 + Math.min(22, ageYrs * 2.6) + norm(repoCount, 250) * 32);
-
-  const weights = { FINISHING: .25, VISION: .2, PACE: .15, DRIBBLING: .15, TACKLING: .1, ENGINE: .15 };
-  const ovr = Math.round(sho * weights.FINISHING + pas * weights.VISION + pac * weights.PACE + dri * weights.DRIBBLING + def * weights.TACKLING + phy * weights.ENGINE);
-
-  return {
-    pac, sho, pas, dri, def, phy, ovr, stars, forks, repoCount, followers,
-    topLang, uniqLangs, weights,
-    formulas: {
-      PACE: `45 + repos/250 ×34 + followers/150k ×20`,
-      FINISHING: `45 + stars/250k ×54`,
-      VISION: `45 + forks/25k ×40 + following/1k ×14`,
-      DRIBBLING: `48 + languages/14 ×51`,
-      TACKLING: `45 + stars+forks/300k ×38 + age ×1.5`,
-      ENGINE: `45 + age ×2.6 (max 22) + repos/250 ×32`,
-    },
-  };
-}
+import { clamp, fmt, POSITIONS, positionFor, tierFor, rate, USERNAME_RE } from "./lib/rate.js";
 
 /* ---------- token + cache ---------- */
 const getToken = () => localStorage.getItem("fctoken") || "";
@@ -285,26 +230,58 @@ $("surprise").addEventListener("click", () => {
   generate(pick);
 });
 
-$("download").addEventListener("click", async () => {
+$("download").addEventListener("click", () => exportCard());
+
+let exportReason = "";
+
+/* Rasterise the card. html-to-image measures the live element, so anything
+   mid-animation makes it crop — hence the .exporting freeze. */
+async function exportCard() {
   if (typeof window.htmlToImage?.toPng !== "function") {
+    exportReason = "html-to-image not loaded";
     toast("Export library blocked — screenshot instead");
-    return;
+    return null;
   }
   const btn = $("download");
   btn.disabled = true;
+  card.classList.add("exporting");
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+  const w = card.offsetWidth, h = card.offsetHeight;
   try {
-    const url = await window.htmlToImage.toPng(card, { pixelRatio: 3, cacheBust: true });
+    const url = await window.htmlToImage.toPng(card, {
+      pixelRatio: 3,
+      cacheBust: true,
+      width: w,
+      height: h,
+      style: { margin: "0", boxShadow: "none" },
+    });
     const a = document.createElement("a");
     a.download = ($("name").textContent || "github-fc-card").replace(/[^\w-]+/g, "-").toLowerCase() + "-fc-card.png";
     a.href = url;
     a.click();
     toast("Saved — go post it");
-  } catch {
+    return url;
+  } catch (e) {
+    exportReason = (e && e.message) ? e.message : String(e);
     toast("Export failed — screenshot instead");
+    return null;
   } finally {
+    card.classList.remove("exporting");
     btn.disabled = false;
   }
-});
+}
+
+/* ?export=1 self-test: renders the PNG and reports its real pixel size in the
+   title, so the output can be verified without a human clicking the button. */
+if (new URLSearchParams(location.search).has("export")) {
+  new Promise((r) => setTimeout(r, 2500)).then(async () => {
+    const url = await exportCard();
+    if (!url) { document.title = "EXPORT FAILED: " + exportReason; return; }
+    const bmp = await createImageBitmap(await (await fetch(url)).blob());
+    document.title = `EXPORT ${bmp.width}x${bmp.height} expected ${card.offsetWidth * 3}x${card.offsetHeight * 3}`;
+  });
+}
 
 $("share").addEventListener("click", () => {
   const text = `GitHub FC card: ${$("ovr").textContent} OVR ${$("pos").textContent} — ${$("name").textContent}. What's your rating?`;
@@ -335,6 +312,12 @@ if (tokenInput) {
     $("tokenState").textContent = getToken() ? "Token saved — 5,000 requests/hr" : "No token — 60 requests/hr";
     toast(getToken() ? "Token saved locally" : "Token cleared");
   });
+}
+
+/* ?only=card strips the page down to just the card — handy for grabbing a
+   clean image of it, e.g. ?u=someone&only=card */
+if (new URLSearchParams(location.search).has("only")) {
+  document.body.classList.add("only-card");
 }
 
 /* deep link */
