@@ -314,6 +314,48 @@ if (tokenInput) {
   });
 }
 
+/* ---------- star count ---------- */
+const REPO = "mukundzha/gfc";
+const STARS_KEY = "fcstars", STARS_TTL = 6 * 3600 * 1000;
+
+function paintStars(n) {
+  const el = $("starCount");
+  if (!el || typeof n !== "number") return;
+  el.textContent = n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+  el.hidden = false;
+}
+
+async function loadStars() {
+  let hit = null;
+  try {
+    const raw = localStorage.getItem(STARS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.t < STARS_TTL) hit = parsed.n;
+    }
+  } catch { /* ignore malformed cache */ }
+  if (hit !== null) { paintStars(hit); return; }
+
+  try {
+    const token = getToken();
+    const res = await fetch(`https://api.github.com/repos/${REPO}`, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) return;                       // silent: no count, button still works
+    const data = await res.json();
+    if (typeof data.stargazers_count !== "number") return;
+    try { localStorage.setItem(STARS_KEY, JSON.stringify({ t: Date.now(), n: data.stargazers_count })); } catch { /* quota */ }
+    paintStars(data.stargazers_count);
+  } catch { /* offline — leave it hidden */ }
+}
+
+const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
+idle(() => loadStars());
+
 /* ?only=card strips the page down to just the card — handy for grabbing a
    clean image of it, e.g. ?u=someone&only=card */
 if (new URLSearchParams(location.search).has("only")) {

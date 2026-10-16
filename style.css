@@ -110,6 +110,25 @@ button:disabled { cursor: progress; opacity: .55; }
 }
 .demos button:hover { border-color: var(--accent); color: var(--accent); }
 
+/* ---------- star CTA ---------- */
+.star-cta {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: fit-content; margin: 22px auto 0; padding: 9px 16px;
+  background: var(--ink-700); border: 1px solid var(--line);
+  border-radius: 999px; color: var(--muted);
+  text-decoration: none; font: 500 .88rem var(--font);
+  transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.star-cta:hover { color: var(--text); border-color: #3a465c; background: var(--ink-600); }
+.star-mark { flex-shrink: 0; transition: transform .4s var(--ease); }
+.star-cta:hover .star-mark { transform: scale(1.12); }
+.star-count {
+  display: flex; align-items: center; gap: 8px;
+  padding-left: 9px; margin-left: 1px; border-left: 1px solid var(--line);
+  font-family: var(--mono); font-size: .78rem; color: var(--accent);
+}
+.star-count[hidden] { display: none; }
+
 /* ---------- stage ---------- */
 .stage { margin-top: 34px; }
 .hidden { display: none; }
@@ -394,6 +413,7 @@ body.only-card .head,
 body.only-card .search,
 body.only-card .status,
 body.only-card .demos,
+body.only-card .star-cta,
 body.only-card .token,
 body.only-card .actions,
 body.only-card .breakdown,
