@@ -117,9 +117,22 @@ async function render(user, repos, { animate = true } = {}) {
     .forEach(([id, v]) => { $(id).parentElement.querySelector(".bar").style.setProperty("--v", v + "%"); });
 
   $("name").textContent = (user.name || user.login).slice(0, 20);
-  $("club").textContent = (user.company || "Free Agent").replace(/^@/, "").slice(0, 22);
-  $("nation").textContent = (user.location || "Internet").slice(0, 22);
-  $("clubCrest").dataset.l = (user.name || user.login).trim().charAt(0).toUpperCase();
+  /* Real facts beat placeholder filler. "Free Agent / Internet" told you
+     nothing; the repo someone is actually known for does. Falls back to the
+     most recently pushed repo so the row is never empty. */
+  const starred = repos.filter((r) => !r.fork && (r.stargazers_count || 0) > 0)
+    .sort((a, b) => b.stargazers_count - a.stargazers_count);
+  const recent = repos.filter((r) => !r.fork)
+    .sort((a, b) => new Date(b.pushed_at || 0) - new Date(a.pushed_at || 0));
+  const hero = starred[0] || recent[0];
+  $("topRepo").textContent = hero ? hero.name : "no public repos";
+  $("topRepoStars").textContent = hero ? fmt(hero.stargazers_count || 0) : "";
+
+  const where = [user.company, user.location].filter(Boolean)
+    .map((x) => String(x).replace(/^@/, "").trim()).filter(Boolean)[0];
+  const whereFact = $("whereFact");
+  if (where) { $("where").textContent = where.slice(0, 28); whereFact.hidden = false; }
+  else { whereFact.hidden = true; }
   $("foot").textContent = `★ ${fmt(s.stars)} · ${s.repoCount} repos · ${fmt(s.followers)} followers`;
   $("langName").textContent = s.topLang;
   $("sigHandle").textContent = "@" + user.login;

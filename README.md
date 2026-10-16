@@ -20,12 +20,12 @@ Two requests: `GET /users/{u}` and `GET /users/{u}/repos?per_page=100`. Then six
 
 | Attribute | Formula |
 |---|---|
-| FINISHING | `45 + norm(sum of √stars per repo, 2000) * 54` |
-| PACE | `45 + norm(repos, 250) * 34 + norm(followers, 150k) * 20` |
-| VISION | `45 + norm(forks, 25k) * 40 + norm(topics, 40) * 14` |
-| DRIBBLING | `48 + norm(main-language KB, 1.5M) * 51` |
-| TACKLING | `45 + unarchived share * 30 + described share * 24` |
-| ENGINE | `45 + norm(active years, 20) * 54` |
+| FINISHING | `45 + norm(sum of √stars per repo, 2200) * 54` |
+| PACE | `45 + norm(repos, 220) * 33 + norm(followers, 120k) * 21` |
+| VISION | `45 + norm(forks, 40k) * 42 + norm(topics, 40) * 12` |
+| DRIBBLING | `45 + norm(languages, 12) * 24 + norm(main-language KB, 1.8M) * 30` |
+| TACKLING | `45 + upkeep * 54`, upkeep gated on having 30+ repos |
+| ENGINE | `45 + norm(active years, 15) * 54` |
 
 OVR is the weighted average, defined in `WEIGHTS` in `lib/rate.js`.
 
@@ -39,9 +39,13 @@ Four decisions worth arguing with:
 
 **ENGINE counts active years, not account age.** It's the number of distinct calendar years with at least one push. Ten years of existing is not ten years of stamina, and the old formula punished new accounts for being new.
 
-**DRIBBLING weights languages by repository size.** A 400MB Rust project counts for more than a dozen two-line scripts, so depth beats dabbling.
+**DRIBBLING weights languages by repository size.** A 400MB Rust project counts for more than a dozen two-line scripts, so depth beats dabbling. Language count is worth less than size on purpose.
 
-The ceilings in `CEILINGS` are numbers I picked, and they decide who gets a good card. They were set just above the strongest value measured on a real account, which keeps 99 rare. That measurement skewed towards well-known developers, so the spread around the middle of the range is unverified. Everything tunable lives in `lib/rate.js`.
+**Every attribute is volume-gated.** TACKLING is the clearest case: upkeep is a ratio, so without a gate a 12-repo account scored 97 just for keeping things tidy. The credit now scales with how many repos are behind the ratio, which capped small accounts at roughly 65 and left the top of the scale for people who have actually maintained something large.
+
+The ceilings in `CEILINGS` decide who gets a good card, and they were tuned against a cached sample of ten real accounts. Of that sample exactly one scores 98, two score 96, and the weakest sits at 67. Getting to the top takes a large body of starred work, a following, forks, a deep multi-language codebase, years of upkeep and a long run of active years, all at once. That is the intent: the scale should be hard to top out.
+
+That sample skewed towards established developers, so the middle of the range is still the least verified part. `node tools/calibrate.mjs <accounts>` re-measures it. Everything tunable lives in `lib/rate.js`.
 
 ## Position
 

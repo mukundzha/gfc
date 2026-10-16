@@ -242,15 +242,6 @@ button:disabled { cursor: progress; opacity: .55; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .team { display: flex; align-items: center; gap: 8px; margin-top: 12px; max-width: 100%; }
-.crest {
-  width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%;
-  background: var(--ink); color: #171104;
-  display: grid; place-items: center;
-}
-.crest::after { content: attr(data-l); font: 700 .74rem var(--font); line-height: 1; }
-.team-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
-.club { font-size: .82rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nation { font-family: var(--mono); font-size: .6rem; opacity: .68; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .rule { height: 1px; background: var(--edge); margin: 17px 0 15px; }
 .rule.thin { margin: 15px 0 12px; opacity: .6; }
@@ -408,8 +399,24 @@ button:disabled { cursor: progress; opacity: .55; }
 }
 .noscript a { color: var(--accent); }
 
-/* ---------- identity badges ---------- */
-.badges { display: flex; align-items: center; gap: 8px; margin-top: 10px; min-height: 20px; }
+/* ---------- identity facts ---------- */
+.facts { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.fact {
+  display: flex; align-items: center; gap: 7px; min-width: 0;
+  font-family: var(--mono); font-size: .66rem; color: var(--ink);
+}
+.fact-icon { flex-shrink: 0; color: var(--ink); opacity: .75; }
+.fact-name {
+  font-weight: 500; letter-spacing: .01em; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fact-num { margin-left: auto; padding-left: 8px; opacity: .7; flex-shrink: 0; }
+.fact-soft { opacity: .62; font-size: .62rem; }
+.fact-soft .fact-name { font-weight: 400; }
+.fact-soft[hidden] { display: none; }
+
+/* ---------- language badge ---------- */
+.badges { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .lang-slot {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px 4px; border-radius: 999px;
@@ -420,7 +427,7 @@ button:disabled { cursor: progress; opacity: .55; }
   background: var(--ink); box-shadow: 0 0 8px var(--halo);
 }
 .lang-name {
-  font-family: var(--mono); font-size: .62rem; letter-spacing: .04em;
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .04em;
   text-transform: uppercase; white-space: nowrap;
 }
 .lang-slot[hidden] { display: none; }
