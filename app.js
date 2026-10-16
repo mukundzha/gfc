@@ -157,7 +157,7 @@ function setStatus(msg, isErr = false) {
 }
 
 /* ---------- render ---------- */
-function render(user, repos, { animate = true } = {}) {
+async function render(user, repos, { animate = true } = {}) {
   const s = rate(user, repos);
   const pos = positionFor(s.topLang);
 
@@ -196,6 +196,19 @@ function render(user, repos, { animate = true } = {}) {
     .sort((a, b) => b[1] - a[1])
     .map(([k, w]) => `<li><span>${k}</span><b>${Math.round(w * 100)}%</b></li>`).join("");
 
+  /* Avatar last: the skeleton stays up until the photo has actually painted,
+     so the card never flashes an empty frame. Inlining as a data URL also keeps
+     PNG export from being blocked by canvas tainting. */
+  const av = $("avatar");
+  if (user.avatar_url) {
+    const src = user.avatar_url + (user.avatar_url.includes("?") ? "&" : "?") + "s=260";
+    const inline = await avatarDataUrl(src);
+    av.src = inline || src;
+    await new Promise((res) => { av.onload = res; av.onerror = res; setTimeout(res, 1500); });
+  } else {
+    av.removeAttribute("src");
+  }
+
   skeleton.classList.add("hidden");
   stage.classList.remove("hidden");
   stage.setAttribute("aria-busy", "false");
@@ -221,7 +234,7 @@ async function generate(raw) {
 
   const cached = cacheGet(username.toLowerCase());
   if (cached) {
-    try { render(cached.user, cached.repos); history.replaceState(null, "", "?u=" + encodeURIComponent(cached.user.login)); setStatus(""); return; }
+    try { await render(cached.user, cached.repos); history.replaceState(null, "", "?u=" + encodeURIComponent(cached.user.login)); setStatus(""); return; }
     catch { /* fall through to network */ }
   }
 
@@ -243,7 +256,7 @@ async function generate(raw) {
     ]);
     if (ctrl.signal.aborted) return;
 
-    render(user, repos);
+    await render(user, repos);
     cacheSet(username.toLowerCase(), { user, repos });
     setStatus("");
     history.replaceState(null, "", "?u=" + encodeURIComponent(user.login));
